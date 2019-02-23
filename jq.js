@@ -1,4 +1,12 @@
 (function () {
+    'use strict';
+    //////////////////////////////////////////
+    var lowercase = function (string) {
+        return isString(string) ? string.toLowerCase() : string;
+    };
+    var trim = function (value) {
+        return isString(value) ? value.trim() : value;
+    };
     //////////////////////////////////////////
     var BOOLEAN_ATTR = {};
     forEach('multiple,selected,checked,disabled,readOnly,required,open'.split(','), function (value) {
@@ -12,13 +20,7 @@
     var NODE_TYPE_DOCUMENT = 9;
     var NODE_TYPE_DOCUMENT_FRAGMENT = 11;
     var hasOwnProperty = Object.prototype.hasOwnProperty;
-    //////////////////////////////////////////
-    var lowercase = function (string) {
-        return isString(string) ? string.toLowerCase() : string;
-    };
-    var trim = function (value) {
-        return isString(value) ? value.trim() : value;
-    };
+
     //////////////////////////////////////////
 // attr:attr,
 // forEach:forEach,
@@ -61,6 +63,7 @@
             return ret === null ? undefined : ret;
         }
     }
+
     function forEach(obj, iterator, context) {
         var key, length;
         if (obj) {
@@ -102,31 +105,42 @@
         }
         return obj;
     }
+
     function html(element, value) {
         if (isUndefined(value)) {
             return element.innerHTML;
         }
-        jqLiteDealoc(element, true);
         element.innerHTML = value;
     }
+
     function isArray(arr) {
         return Array.isArray(arr) || arr instanceof Array;
     }
+
     function isBlankObject(value) {
         return value !== null && typeof value === 'object' && !getPrototypeOf(value);
     }
+
     function isDefined(value) {
         return typeof value !== 'undefined';
     }
+
+    function isUndefined(value) {
+        return typeof value === 'undefined';
+    }
+
     function isFunction(value) {
         return typeof value === 'function';
     }
+
     function isRegExp(value) {
         return toString.call(value) === '[object RegExp]';
     }
+
     function isString(value) {
         return typeof value === 'string';
     }
+
     function jqLiteAddClass(element, cssClasses) {
         if (cssClasses && element.setAttribute) {
             var existingClasses = (' ' + (element.getAttribute('class') || '') + ' ')
@@ -143,10 +157,12 @@
             }
         }
     }
+
     function jqLiteHasClass(element, selector) {
         if (!element.getAttribute) return false;
         return ((' ' + (element.getAttribute('class') || '') + ' ').replace(/[\n\t]/g, ' ').indexOf(' ' + selector + ' ') > -1);
     }
+
     function jqLiteRemoveClass(element, cssClasses) {
         if (cssClasses && element.setAttribute) {
             var existingClasses = (' ' + (element.getAttribute('class') || '') + ' ')
@@ -161,15 +177,18 @@
             }
         }
     }
+
     function jqToggleClass(element, cssClasses) {
         if (jqLiteHasClass(element, cssClasses))
             jqLiteRemoveClass(element, cssClasses);
         else
             jqLiteAddClass(element, cssClasses);
     }
+
     function nodeName_(element) {
         return lowercase(element.nodeName || (element[0] && element[0].nodeName));
     }
+
     function val(element, value) {
         if (isUndefined(value)) {
             if (element.multiple && nodeName_(element) === 'select') {
@@ -185,9 +204,21 @@
         }
         element.value = value;
     }
+
+    function css(element, name, value) {
+        name = cssKebabToCamel(name);
+
+        if (isDefined(value)) {
+            element.style[name] = value;
+        } else {
+            return element.style[name];
+        }
+    }
+
     //////////////////////////////////////////
     window['jq'] = {
         attr: attr,
+        css: css,
         forEach: forEach,
         html: html,
         isArray: isArray,
@@ -201,5 +232,20 @@
         removeClass: jqLiteRemoveClass,
         toggleClass: jqToggleClass,
         val: val,
+
+        //////////////////////////////////////////
+        text: (function () {
+            getText.$dv = '';
+            return getText;
+
+            function getText(element, value) {
+                if (isUndefined(value)) {
+                    var nodeType = element.nodeType;
+                    return (nodeType === NODE_TYPE_ELEMENT || nodeType === NODE_TYPE_TEXT) ? element.textContent : '';
+                }
+                element.textContent = value;
+            }
+        })(),
+        trim: trim,
     };
 })();
